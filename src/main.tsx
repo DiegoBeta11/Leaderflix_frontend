@@ -22,4 +22,4 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   </React.StrictMode>
 );
 
-// const errorAdrede: string = 12345; // Intentar meter un número en un string
+const errorAdrede: string = 12345; // Intentar meter un número en un string
