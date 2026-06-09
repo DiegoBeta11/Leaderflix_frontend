@@ -20,15 +20,15 @@ jobs:
 
     - name: Install dependencies
       run: |
-        cd Leaderflix_frontend
+        cd *frontend*
         npm install
 
     - name: Run linter
       run: |
-        cd Leaderflix_frontend
+        cd *frontend*
         npm run lint
 
     - name: Build project
       run: |
-        cd Leaderflix_frontend
+        cd *frontend*
         npm run build --if-present
