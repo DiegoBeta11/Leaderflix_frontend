@@ -14,7 +14,12 @@ import SearchResults from "../pages/search";
 const AppRoutes = () => {
   return (
     <HelmetProvider>
-      <BrowserRouter>
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
         <Routes>
           <Route path="/" element={<Navigate to="/sign_in" replace />} />
           <Route path="/sign_in" element={<SignIn />} />

@@ -1,4 +1,19 @@
-const API_URL = import.meta.env.VITE_API_URL;
+const rawApiUrl = import.meta.env.VITE_API_URL?.trim();
+const API_URL = (rawApiUrl || "http://localhost:8080").replace(/\/+$/, "");
+
+if (!rawApiUrl) {
+  console.warn(
+    "VITE_API_URL no está definida. Usando fallback local: http://localhost:8080"
+  );
+}
+
+async function parseJsonSafe(response: Response) {
+  try {
+    return await response.json();
+  } catch {
+    return {};
+  }
+}
 
 /**
  * Register new user with username, email, birthdate, and password
@@ -14,18 +29,31 @@ export async function registrarUsuario(
   birthdate: string,
   password: string
 ) {
-  const response = await fetch(`${API_URL}/users/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, email, birthdate, password }),
-  });
+  try {
+    const response = await fetch(`${API_URL}/users/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, email, birthdate, password }),
+    });
 
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.message || "Error al registrar usuario");
+    const data = await parseJsonSafe(response);
+
+    if (!response.ok) {
+      const errorMsg = data.message || data.msg || data.error || "Error al registrar usuario";
+      console.error("Respuesta del servidor:", { status: response.status, data });
+      throw new Error(errorMsg);
+    }
+
+    return data;
+  } catch (error: any) {
+    if (error instanceof TypeError) {
+      throw new Error(
+        `No se pudo conectar con el backend en ${API_URL}. Verifica que el servidor esté encendido y que VITE_API_URL sea correcta.`
+      );
+    }
+
+    throw error;
   }
-
-  return data;
 }
 
 /**
@@ -38,7 +66,7 @@ export async function loginUsuario(email: string, password: string) {
     body: JSON.stringify({ email, password }),
   });
 
-  const data = await response.json();
+  const data = await parseJsonSafe(response);
 
   if (!response.ok) {
     throw new Error(data.message || "Error al iniciar sesión");
@@ -59,7 +87,7 @@ export async function forgotPassword(email: string) {
     body: JSON.stringify({ email }),
   });
 
-  const data = await response.json();
+  const data = await parseJsonSafe(response);
 
   if (!response.ok) {
     throw new Error(data.msg || "Error al enviar el correo");
@@ -127,7 +155,7 @@ export async function resetPassword({
       body: JSON.stringify({ newPassword }),
     });
 
-    const data = await response.json();
+    const data = await parseJsonSafe(response);
 
     if (!response.ok) {
       throw new Error(data.message || "Error al actualizar la contraseña.");
