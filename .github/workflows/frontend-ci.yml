@@ -13,22 +13,24 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Diagnose Repository Structure
+      run: |
+        echo "=== CARPETAS EN EL SERVIDOR ==="
+        ls -la
+        echo "=== BUSCANDO EN LOGS EL PACKAGES ==="
+        find . -name "package.json"
+
     - name: Use Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20'
 
-    - name: Install dependencies
+    - name: Install & Test (Definitivo)
       run: |
-        cd *frontend*
+        # Buscar dinámicamente dónde está la carpeta del frontend
+        FRONTEND_DIR=$(find . -name "package.json" -not -path "*/node_modules/*" -exec dirname {} \;)
+        echo "La carpeta real es: $FRONTEND_DIR"
+        cd "$FRONTEND_DIR"
         npm install
-
-    - name: Run linter
-      run: |
-        cd *frontend*
         npm run lint
-
-    - name: Build project
-      run: |
-        cd *frontend*
         npm run build --if-present
